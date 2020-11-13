@@ -79,8 +79,7 @@ func (t *TxTries) indexOfRoot(root common.Hash) int {
 func (t *TxTries) AddTrie(root common.Hash, db *leveldb.Database, transactions []common.Hash) (*Trie, error) {
 	// TODO: look into cache values
 	// this creates a new trie database with our KVDB as the diskDB for node storage
-	newTrie, err := trie.New(emptyRoot, trie.NewDatabaseWithCache(db, 0))
-
+	newTrie, err := trie.New(emptyRoot, trie.NewDatabaseWithCache(db, 0, ""))
 	if err != nil {
 		return nil, err
 	}
@@ -143,8 +142,12 @@ func intToBytes(i int) ([]byte, error) {
 
 func (t *Trie) deleteTrie(root common.Hash, txStored int) error {
 	for i := 0; i < 10; i++ {
-		// keys for all transactions are the rlp encoding of their position in the block.
-		key, err := rlp.EncodeToBytes(i)
+		// keys for all transactions are the rlp encoding of their position in the block
+		b, err := intToBytes(i)
+		if err != nil {
+			return err
+		}
+		key, err := rlp.EncodeToBytes(b)
 		if err != nil {
 			return err
 		}
