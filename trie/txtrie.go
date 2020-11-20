@@ -11,13 +11,13 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethdb/leveldb"
 	"github.com/ethereum/go-ethereum/rlp"
-	"github.com/ethereum/go-ethereum/trie"
+	ethtrie "github.com/ethereum/go-ethereum/trie"
 )
 
 // TxTries stores all the instances of tries we have on disk
 type TxTries struct {
 	// TODO: the memory allocated for these is hard to get back, look for better way to have a queue
-	txTries      []*trie.Trie
+	txTries      []*ethtrie.Trie
 	txRoots      []common.Hash
 	triesToStore int
 }
@@ -36,11 +36,11 @@ func NewTxTries(t int) *TxTries {
 
 }
 
-func (t *TxTries) updateTriesAndRoots(trie *trie.Trie, root common.Hash) error {
+func (t *TxTries) updateTriesAndRoots(trie *ethtrie.Trie, root common.Hash) error {
 	if len(t.txTries) >= t.triesToStore {
 		t.txTries = append(t.txTries, trie)
 		// delete contents of trie from database
-		err := t.txTries[0].deleteTrie(t.txRoots[0], t.txTries[0].txStored)
+		err := deleteTrie(t.txTries[0])
 		if err != nil {
 			return err
 		}
@@ -54,6 +54,40 @@ func (t *TxTries) updateTriesAndRoots(trie *trie.Trie, root common.Hash) error {
 		t.txRoots = append(t.txRoots, root)
 
 	}
+
+	return nil
+
+}
+
+func deleteTrie(trie *ethtrie.Trie) error {
+
+	// note that TryDelete removes any existing value for key from the trie.
+	// if the value node corresponding to the key does not exist in the trie
+	// it returns a MissingNodeError.
+	// Since the key of a transaction in the trie corresponds to the rlp encoding
+	// of that transactions index in the block, we will incrementally delete keys
+	// until we recieve a MissingNodeError
+
+	for {
+		i := 0
+		// key of transaction 
+		b, err := intToBytes(i)
+		if err != nil {
+			return err
+		}
+		key, err := rlp.EncodeToBytes(b)
+		if err != nil {
+			return err
+		}
+
+		err = trie.TryDelete(key)
+		if err != nil {
+			// in this case we are expecting to hit an error when we hit a key that has no value node.
+			break
+		}
+
+		i++
+	} 
 
 	return nil
 
@@ -82,7 +116,7 @@ func (t *TxTries) AddTrie(root common.Hash, db *leveldb.Database, transactions [
 		trie: newTrie,
 	}
 
-	err = trie.updateTrie(transactions, root)
+	err = updateTrie(trie, transactions, root)
 
 	if err != nil {
 		return nil, err
@@ -99,7 +133,7 @@ func (t *TxTries) AddTrie(root common.Hash, db *leveldb.Database, transactions [
 
 // updateTrie updates the transaction trie with root transactionRoot with given transactions
 // note that this assumes the slice transactions is in the same order they are in the block
-func (t *Trie) updateTrie(transactions []common.Hash, transactionRoot common.Hash) error {
+func updateTrie(trie *ethtrie.Trie, transactions []common.Hash, transactionRoot common.Hash) error {
 	for i, tx := range transactions {
 		b, err := intToBytes(i)
 		if err != nil {
@@ -111,11 +145,11 @@ func (t *Trie) updateTrie(transactions []common.Hash, transactionRoot common.Has
 			return err
 		}
 
-		t.trie.Update(key, tx.Bytes())
+		trie.Update(key, tx.Bytes())
 	}
 
 	// check if the root hash of the trie matches the transactionRoot
-	if t.trie.Hash() != transactionRoot {
+	if trie.Hash() != transactionRoot {
 		return errors.New("transaction roots don't match")
 	}
 
@@ -134,27 +168,7 @@ func intToBytes(i int) ([]byte, error) {
 
 }
 
-func (t *trie.Trie) deleteTrie(t *trie.Trie) error {
-	for i := 0; i < 10; i++ {
-		// keys for all transactions are the rlp encoding of their position in the block
-		b, err := intToBytes(i)
-		if err != nil {
-			return err
-		}
-		key, err := rlp.EncodeToBytes(b)
-		if err != nil {
-			return err
-		}
 
-		err = t.trie.TryDelete(key)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-
-}
 
 // RetrieveEncodedProof retrieves an encoded Proof for a value at key in trie with root root
 func (t *TxTries) RetrieveEncodedProof(root common.Hash, key []byte) ([]byte, error) {
