@@ -116,7 +116,10 @@ func TestEmptyTxTries(t *testing.T) {
 
 func TestAddEmptyTrie(t *testing.T) {
 	txTries := createNewTxTries(defaultTriesToStore)
-	addTrie(txTries, emptyRoot, nil, nil)
+	err := addTrie(txTries, emptyRoot, nil, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	if txTries.txRoots[0] != emptyRoot {
 		t.Fatalf("failed to set txRoot in txTries properly, expected: %x, got: %x", emptyRoot, txTries.txRoots[0])
@@ -134,7 +137,10 @@ func TestAddEmptyTrie(t *testing.T) {
 
 func TestAddEmptyTrieRetrieveProof_Fails(t *testing.T) {
 	txTries := createNewTxTries(defaultTriesToStore)
-	addTrie(txTries, emptyRoot, nil, nil)
+	err := addTrie(txTries, emptyRoot, nil, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	if txTries.txRoots[0] != emptyRoot {
 		t.Fatalf("failed to set txRoot in txTries properly, expected: %x, got: %x", emptyRoot, txTries.txRoots[0])
