@@ -17,8 +17,9 @@ import (
 // TxTries stores all the instances of tries we have on disk
 type TxTries struct {
 	// TODO: the memory allocated for these is hard to get back, look for better way to have a queue
-	txTries      []*ethtrie.Trie
-	txRoots      []common.Hash
+	txTries map[common.Hash]*ethtrie.Trie
+	// txTries      []*ethtrie.Trie
+	txRoots      []common.Hash // needed to track insertion order
 	triesToStore int
 }
 
@@ -30,6 +31,7 @@ var (
 // NewTxTries creates a new instance of a TxTries object
 func NewTxTries(t int) *TxTries {
 	txTrie := &TxTries{
+		txTries : make(map[common.Hash]*ethtrie.Trie),
 		triesToStore: t,
 	}
 	return txTrie
@@ -38,19 +40,19 @@ func NewTxTries(t int) *TxTries {
 
 func (t *TxTries) updateTriesAndRoots(trie *ethtrie.Trie, root common.Hash) error {
 	if len(t.txTries) >= t.triesToStore {
-		t.txTries = append(t.txTries, trie)
+		t.txTries[root] = trie
 		// delete contents of trie from database
-		err := deleteTrie(t.txTries[0])
+		trieToDelete := t.txTries[t.txRoots[0]]
+		err := deleteTrie(trieToDelete)
 		if err != nil {
 			return err
 		}
-		t.txTries = t.txTries[1:]
-
+		delete(t.txTries, t.txRoots[0])
 		t.txRoots = append(t.txRoots, root)
 		t.txRoots = t.txRoots[1:]
 
 	} else {
-		t.txTries = append(t.txTries, trie)
+		t.txTries[root] = trie
 		t.txRoots = append(t.txRoots, root)
 
 	}
@@ -172,13 +174,13 @@ func (t *TxTries) RetrieveEncodedProof(root common.Hash, key []byte) ([]byte, er
 
 // RetrieveProof retrieves a Proof for a value at key in trie with root root
 func (t *TxTries) RetrieveProof(root common.Hash, key []byte) (*ProofDatabase, error) {
-	index := t.indexOfRoot(root)
+	trieToRetrieve := t.txTries[root]
 
-	if index == -1 {
+	if trieToRetrieve == nil {
 		return nil, errors.New("transaction trie for this transaction root does not exist")
 	}
 
-	return retrieveProof(t.txTries[index], root, key)
+	return retrieveProof(trieToRetrieve, root, key)
 }
 
 func retrieveProof(trie *ethtrie.Trie, root common.Hash, key []byte) (*ProofDatabase, error) {

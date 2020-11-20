@@ -94,8 +94,9 @@ func (db *ProofDatabase) Delete(key []byte) error {
 }
 
 // Encodes a proof Database to a format parsable by the on chain contract
-func encodeProofDB(rootHash common.Hash, key []byte, proofDb *ProofDatabase) (encodedProof []byte, err error) {
+func encodeProofDB(rootHash common.Hash, key []byte, proofDb *ProofDatabase) ([]byte, error) {
 	var proofNodes proof
+	var encodedProof []byte
 	var proof *proofBuffer
 	key = keybytesToHex(key)
 	wantHash := rootHash
