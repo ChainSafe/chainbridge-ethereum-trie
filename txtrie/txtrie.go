@@ -31,7 +31,7 @@ var (
 // NewTxTries creates a new instance of a TxTries object
 func NewTxTries(t int) *TxTries {
 	txTrie := &TxTries{
-		txTries : make(map[common.Hash]*ethtrie.Trie),
+		txTries:      make(map[common.Hash]*ethtrie.Trie),
 		triesToStore: t,
 	}
 	return txTrie
@@ -40,7 +40,6 @@ func NewTxTries(t int) *TxTries {
 
 func (t *TxTries) updateTriesAndRoots(trie *ethtrie.Trie, root common.Hash) error {
 	if len(t.txTries) >= t.triesToStore {
-		t.txTries[root] = trie
 		// delete contents of trie from database
 		trieToDelete := t.txTries[t.txRoots[0]]
 		err := deleteTrie(trieToDelete)
@@ -49,11 +48,12 @@ func (t *TxTries) updateTriesAndRoots(trie *ethtrie.Trie, root common.Hash) erro
 		}
 		delete(t.txTries, t.txRoots[0])
 		t.txRoots = append(t.txRoots, root)
+		t.txTries[root] = trie
 		t.txRoots = t.txRoots[1:]
 
 	} else {
-		t.txTries[root] = trie
 		t.txRoots = append(t.txRoots, root)
+		t.txTries[root] = trie
 
 	}
 
@@ -89,16 +89,6 @@ func deleteTrie(trie *ethtrie.Trie) error {
 	}
 
 	return nil
-
-}
-
-func (t *TxTries) indexOfRoot(root common.Hash) int {
-	for i, r := range t.txRoots {
-		if root == r {
-			return i
-		}
-	}
-	return -1
 
 }
 

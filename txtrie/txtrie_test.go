@@ -316,6 +316,8 @@ func TestAddMultipleTries(t *testing.T) {
 		t.Fatalf("failed to set txRoot in txTries properly, expected: %x, got: %x", expectedRoot1, txTries.txRoots[2])
 	}
 
+	fmt.Println(txTries.txTries[txTries.txRoots[2]].Hash())
+
 	if txTries.txTries[txTries.txRoots[2]].Hash() != expectedRoot1 {
 		t.Fatalf("trie does not have empty hash as root, expected: %x, got: %x", expectedRoot1, txTries.txTries[txTries.txRoots[2]].Hash())
 	}
