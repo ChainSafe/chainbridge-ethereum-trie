@@ -122,8 +122,8 @@ func TestAddEmptyTrie(t *testing.T) {
 		t.Fatalf("failed to set txRoot in txTries properly, expected: %x, got: %x", emptyRoot, txTries.txRoots[0])
 	}
 
-	if txTries.txTries[0].trie.Hash() != emptyRoot {
-		t.Fatalf("trie does not have empty hash as root, expected: %x, got: %x", emptyRoot, txTries.txTries[0].trie.Hash())
+	if txTries.txTries[0].Hash() != emptyRoot {
+		t.Fatalf("trie does not have empty hash as root, expected: %x, got: %x", emptyRoot, txTries.txTries[0].Hash())
 	}
 
 	if deleteTempDB() != nil {
@@ -140,8 +140,8 @@ func TestAddEmptyTrieRetrieveProof_Fails(t *testing.T) {
 		t.Fatalf("failed to set txRoot in txTries properly, expected: %x, got: %x", emptyRoot, txTries.txRoots[0])
 	}
 
-	if txTries.txTries[0].trie.Hash() != emptyRoot {
-		t.Fatalf("trie does not have empty hash as root, expected: %x, got: %x", emptyRoot, txTries.txTries[0].trie.Hash())
+	if txTries.txTries[0].Hash() != emptyRoot {
+		t.Fatalf("trie does not have empty hash as root, expected: %x, got: %x", emptyRoot, txTries.txTries[0].Hash())
 	}
 
 	if deleteTempDB() != nil {
@@ -166,8 +166,8 @@ func TestAddSingleTrieUpdate(t *testing.T) {
 		t.Fatalf("failed to set txRoot in txTries properly, expected: %x, got: %x", expectedRoot, txTries.txRoots[0])
 	}
 
-	if txTries.txTries[0].trie.Hash() != expectedRoot {
-		t.Fatalf("trie does not have empty hash as root, expected: %x, got: %x", expectedRoot, txTries.txTries[0].trie.Hash())
+	if txTries.txTries[0].Hash() != expectedRoot {
+		t.Fatalf("trie does not have empty hash as root, expected: %x, got: %x", expectedRoot, txTries.txTries[0].Hash())
 	}
 
 	if deleteTempDB() != nil {
@@ -196,8 +196,8 @@ func TestAddSingleTrieRetrieveProof(t *testing.T) {
 		t.Fatalf("failed to set txRoot in txTries properly, expected: %x, got: %x", expectedRoot, txTries.txRoots[0])
 	}
 
-	if txTries.txTries[0].trie.Hash() != expectedRoot {
-		t.Fatalf("trie does not have empty hash as root, expected: %x, got: %x", expectedRoot, txTries.txTries[0].trie.Hash())
+	if txTries.txTries[0].Hash() != expectedRoot {
+		t.Fatalf("trie does not have empty hash as root, expected: %x, got: %x", expectedRoot, txTries.txTries[0].Hash())
 	}
 
 	bytesIndex, err := intToBytes(0)
@@ -251,8 +251,8 @@ func TestAddMultipleTries(t *testing.T) {
 		t.Fatalf("failed to set txRoot in txTries properly, expected: %x, got: %x", expectedRoot1, txTries.txRoots[0])
 	}
 
-	if txTries.txTries[0].trie.Hash() != expectedRoot1 {
-		t.Fatalf("trie does not have empty hash as root, expected: %x, got: %x", expectedRoot1, txTries.txTries[0].trie.Hash())
+	if txTries.txTries[0].Hash() != expectedRoot1 {
+		t.Fatalf("trie does not have empty hash as root, expected: %x, got: %x", expectedRoot1, txTries.txTries[0].Hash())
 	}
 
 	if deleteReferenceDB() != nil {
@@ -274,8 +274,8 @@ func TestAddMultipleTries(t *testing.T) {
 		t.Fatalf("failed to set txRoot in txTries properly, expected: %x, got: %x", expectedRoot2, txTries.txRoots[1])
 	}
 
-	if txTries.txTries[1].trie.Hash() != expectedRoot2 {
-		t.Fatalf("trie does not have empty hash as root, expected: %x, got: %x", expectedRoot2, txTries.txTries[1].trie.Hash())
+	if txTries.txTries[1].Hash() != expectedRoot2 {
+		t.Fatalf("trie does not have empty hash as root, expected: %x, got: %x", expectedRoot2, txTries.txTries[1].Hash())
 	}
 
 	if deleteReferenceDB() != nil {
@@ -297,8 +297,8 @@ func TestAddMultipleTries(t *testing.T) {
 		t.Fatalf("failed to set txRoot in txTries properly, expected: %x, got: %x", expectedRoot3, txTries.txRoots[2])
 	}
 
-	if txTries.txTries[2].trie.Hash() != expectedRoot3 {
-		t.Fatalf("trie does not have empty hash as root, expected: %x, got: %x", expectedRoot3, txTries.txTries[2].trie.Hash())
+	if txTries.txTries[2].Hash() != expectedRoot3 {
+		t.Fatalf("trie does not have empty hash as root, expected: %x, got: %x", expectedRoot3, txTries.txTries[2].Hash())
 	}
 	fmt.Println("HERE")
 	err = addTrie(txTries, expectedRoot1, vals1, db)
@@ -310,16 +310,16 @@ func TestAddMultipleTries(t *testing.T) {
 		t.Fatalf("failed to set txRoot in txTries properly, expected: %x, got: %x", expectedRoot1, txTries.txRoots[2])
 	}
 
-	if txTries.txTries[2].trie.Hash() != expectedRoot1 {
-		t.Fatalf("trie does not have empty hash as root, expected: %x, got: %x", expectedRoot1, txTries.txTries[2].trie.Hash())
+	if txTries.txTries[2].Hash() != expectedRoot1 {
+		t.Fatalf("trie does not have empty hash as root, expected: %x, got: %x", expectedRoot1, txTries.txTries[2].Hash())
 	}
 
 	if txTries.txRoots[0] != expectedRoot2 {
 		t.Fatalf("failed to set txRoot in txTries properly, expected: %x, got: %x", expectedRoot2, txTries.txRoots[0])
 	}
 
-	if txTries.txTries[0].trie.Hash() != expectedRoot2 {
-		t.Fatalf("trie does not have empty hash as root, expected: %x, got: %x", expectedRoot2, txTries.txTries[0].trie.Hash())
+	if txTries.txTries[0].Hash() != expectedRoot2 {
+		t.Fatalf("trie does not have empty hash as root, expected: %x, got: %x", expectedRoot2, txTries.txTries[0].Hash())
 	}
 
 	if deleteTempDB() != nil {
@@ -350,8 +350,8 @@ func TestAddMultipleTriesRetrieveProof(t *testing.T) {
 		t.Fatalf("failed to set txRoot in txTries properly, expected: %x, got: %x", expectedRoot1, txTries.txRoots[0])
 	}
 
-	if txTries.txTries[0].trie.Hash() != expectedRoot1 {
-		t.Fatalf("trie does not have empty hash as root, expected: %x, got: %x", expectedRoot1, txTries.txTries[0].trie.Hash())
+	if txTries.txTries[0].Hash() != expectedRoot1 {
+		t.Fatalf("trie does not have empty hash as root, expected: %x, got: %x", expectedRoot1, txTries.txTries[0].Hash())
 	}
 
 	if deleteReferenceDB() != nil {
@@ -373,8 +373,8 @@ func TestAddMultipleTriesRetrieveProof(t *testing.T) {
 		t.Fatalf("failed to set txRoot in txTries properly, expected: %x, got: %x", expectedRoot2, txTries.txRoots[1])
 	}
 
-	if txTries.txTries[1].trie.Hash() != expectedRoot2 {
-		t.Fatalf("trie does not have empty hash as root, expected: %x, got: %x", expectedRoot2, txTries.txTries[1].trie.Hash())
+	if txTries.txTries[1].Hash() != expectedRoot2 {
+		t.Fatalf("trie does not have empty hash as root, expected: %x, got: %x", expectedRoot2, txTries.txTries[1].Hash())
 	}
 
 	if deleteReferenceDB() != nil {
@@ -396,8 +396,8 @@ func TestAddMultipleTriesRetrieveProof(t *testing.T) {
 		t.Fatalf("failed to set txRoot in txTries properly, expected: %x, got: %x", expectedRoot3, txTries.txRoots[2])
 	}
 
-	if txTries.txTries[2].trie.Hash() != expectedRoot3 {
-		t.Fatalf("trie does not have empty hash as root, expected: %x, got: %x", expectedRoot3, txTries.txTries[2].trie.Hash())
+	if txTries.txTries[2].Hash() != expectedRoot3 {
+		t.Fatalf("trie does not have empty hash as root, expected: %x, got: %x", expectedRoot3, txTries.txTries[2].Hash())
 	}
 
 	err = addTrie(txTries, expectedRoot1, vals1, db)
@@ -409,16 +409,16 @@ func TestAddMultipleTriesRetrieveProof(t *testing.T) {
 		t.Fatalf("failed to set txRoot in txTries properly, expected: %x, got: %x", expectedRoot1, txTries.txRoots[2])
 	}
 
-	if txTries.txTries[2].trie.Hash() != expectedRoot1 {
-		t.Fatalf("trie does not have empty hash as root, expected: %x, got: %x", expectedRoot1, txTries.txTries[2].trie.Hash())
+	if txTries.txTries[2].Hash() != expectedRoot1 {
+		t.Fatalf("trie does not have empty hash as root, expected: %x, got: %x", expectedRoot1, txTries.txTries[2].Hash())
 	}
 
 	if txTries.txRoots[0] != expectedRoot2 {
 		t.Fatalf("failed to set txRoot in txTries properly, expected: %x, got: %x", expectedRoot2, txTries.txRoots[0])
 	}
 
-	if txTries.txTries[0].trie.Hash() != expectedRoot2 {
-		t.Fatalf("trie does not have empty hash as root, expected: %x, got: %x", expectedRoot2, txTries.txTries[0].trie.Hash())
+	if txTries.txTries[0].Hash() != expectedRoot2 {
+		t.Fatalf("trie does not have empty hash as root, expected: %x, got: %x", expectedRoot2, txTries.txTries[0].Hash())
 	}
 
 	bytesIndex, err := intToBytes(0)
@@ -499,8 +499,8 @@ func TestRetrieveProofDeletedTrie_Fails(t *testing.T) {
 		t.Fatalf("failed to set txRoot in txTries properly, expected: %x, got: %x", expectedRoot1, txTries.txRoots[0])
 	}
 
-	if txTries.txTries[0].trie.Hash() != expectedRoot1 {
-		t.Fatalf("trie does not have empty hash as root, expected: %x, got: %x", expectedRoot1, txTries.txTries[0].trie.Hash())
+	if txTries.txTries[0].Hash() != expectedRoot1 {
+		t.Fatalf("trie does not have empty hash as root, expected: %x, got: %x", expectedRoot1, txTries.txTries[0].Hash())
 	}
 
 	if deleteReferenceDB() != nil {
@@ -521,8 +521,8 @@ func TestRetrieveProofDeletedTrie_Fails(t *testing.T) {
 		t.Fatalf("failed to set txRoot in txTries properly, expected: %x, got: %x", expectedRoot2, txTries.txRoots[0])
 	}
 
-	if txTries.txTries[0].trie.Hash() != expectedRoot2 {
-		t.Fatalf("trie does not have empty hash as root, expected: %x, got: %x", expectedRoot2, txTries.txTries[0].trie.Hash())
+	if txTries.txTries[0].Hash() != expectedRoot2 {
+		t.Fatalf("trie does not have empty hash as root, expected: %x, got: %x", expectedRoot2, txTries.txTries[0].Hash())
 	}
 
 	if deleteReferenceDB() != nil {
@@ -543,8 +543,8 @@ func TestRetrieveProofDeletedTrie_Fails(t *testing.T) {
 		t.Fatalf("failed to set txRoot in txTries properly, expected: %x, got: %x", expectedRoot3, txTries.txRoots[2])
 	}
 
-	if txTries.txTries[0].trie.Hash() != expectedRoot3 {
-		t.Fatalf("trie does not have empty hash as root, expected: %x, got: %x", expectedRoot3, txTries.txTries[0].trie.Hash())
+	if txTries.txTries[0].Hash() != expectedRoot3 {
+		t.Fatalf("trie does not have empty hash as root, expected: %x, got: %x", expectedRoot3, txTries.txTries[0].Hash())
 	}
 
 	bytesIndex, err := intToBytes(0)

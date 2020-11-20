@@ -104,16 +104,12 @@ func (t *TxTries) indexOfRoot(root common.Hash) int {
 }
 
 // AddTrie creates a new instance of a trie object
-func (t *TxTries) AddTrie(root common.Hash, db *leveldb.Database, transactions []common.Hash) (*Trie, error) {
+func (t *TxTries) AddTrie(root common.Hash, db *leveldb.Database, transactions []common.Hash) (*ethtrie.Trie, error) {
 	// TODO: look into cache values
 	// this creates a new trie database with our KVDB as the diskDB for node storage
-	newTrie, err := trie.New(emptyRoot, trie.NewDatabaseWithCache(db, 0, ""))
+	trie, err := ethtrie.New(emptyRoot, ethtrie.NewDatabaseWithCache(db, 0, ""))
 	if err != nil {
 		return nil, err
-	}
-
-	trie := &Trie{
-		trie: newTrie,
 	}
 
 	err = updateTrie(trie, transactions, root)
@@ -177,7 +173,7 @@ func (t *TxTries) RetrieveEncodedProof(root common.Hash, key []byte) ([]byte, er
 	if index == -1 {
 		return nil, errors.New("transaction trie for this transaction root does not exist")
 	}
-	proofDB, err := t.txTries[index].retrieveProof(root, key)
+	proofDB, err := retrieveProof(t.txTries[index], root, key)
 	if err != nil {
 		return nil, err
 	}
@@ -192,12 +188,12 @@ func (t *TxTries) RetrieveProof(root common.Hash, key []byte) (*ProofDatabase, e
 		return nil, errors.New("transaction trie for this transaction root does not exist")
 	}
 
-	return t.txTries[index].retrieveProof(root, key)
+	return retrieveProof(t.txTries[index],root, key)
 }
 
-func (t *Trie) retrieveProof(root common.Hash, key []byte) (*ProofDatabase, error) {
+func retrieveProof(trie *ethtrie.Trie, root common.Hash, key []byte) (*ProofDatabase, error) {
 	var proof = NewProofDatabase()
-	err := t.trie.Prove(key, 0, proof)
+	err := trie.Prove(key, 0, proof)
 	if err != nil {
 		return nil, err
 	}
@@ -207,7 +203,7 @@ func (t *Trie) retrieveProof(root common.Hash, key []byte) (*ProofDatabase, erro
 
 // VerifyProof verifies merkle proof on path key against the provided root
 func VerifyProof(root common.Hash, key []byte, proof *ProofDatabase) (bool, error) {
-	exists, err := trie.VerifyProof(root, key, proof)
+	exists, err := ethtrie.VerifyProof(root, key, proof)
 
 	if err != nil {
 		return false, err
