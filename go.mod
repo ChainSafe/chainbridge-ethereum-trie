@@ -1,4 +1,4 @@
-module github.com/ChainSafe/go-template
+module github.com/ChainSafe/Chainbridge-Trie
 
 go 1.13
 
