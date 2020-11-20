@@ -163,12 +163,7 @@ func intToBytes(i int) ([]byte, error) {
 
 // RetrieveEncodedProof retrieves an encoded Proof for a value at key in trie with root root
 func (t *TxTries) RetrieveEncodedProof(root common.Hash, key []byte) ([]byte, error) {
-	index := t.indexOfRoot(root)
-
-	if index == -1 {
-		return nil, errors.New("transaction trie for this transaction root does not exist")
-	}
-	proofDB, err := retrieveProof(t.txTries[index], root, key)
+	proofDB, err := t.RetrieveProof(root, key)
 	if err != nil {
 		return nil, err
 	}
