@@ -14,16 +14,10 @@ import (
 	"github.com/ethereum/go-ethereum/trie"
 )
 
-// Trie is a wrapped ethereum Trie object
-type Trie struct {
-	trie     *trie.Trie
-	txStored int
-}
-
 // TxTries stores all the instances of tries we have on disk
 type TxTries struct {
 	// TODO: the memory allocated for these is hard to get back, look for better way to have a queue
-	txTries      []*Trie
+	txTries      []*trie.Trie
 	txRoots      []common.Hash
 	triesToStore int
 }
@@ -42,7 +36,7 @@ func NewTxTries(t int) *TxTries {
 
 }
 
-func (t *TxTries) updateTriesAndRoots(trie *Trie, root common.Hash) error {
+func (t *TxTries) updateTriesAndRoots(trie *trie.Trie, root common.Hash) error {
 	if len(t.txTries) >= t.triesToStore {
 		t.txTries = append(t.txTries, trie)
 		// delete contents of trie from database
@@ -140,7 +134,7 @@ func intToBytes(i int) ([]byte, error) {
 
 }
 
-func (t *Trie) deleteTrie(root common.Hash, txStored int) error {
+func (t *trie.Trie) deleteTrie(t *trie.Trie) error {
 	for i := 0; i < 10; i++ {
 		// keys for all transactions are the rlp encoding of their position in the block
 		b, err := intToBytes(i)
