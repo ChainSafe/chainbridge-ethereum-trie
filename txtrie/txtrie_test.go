@@ -71,7 +71,7 @@ func addTrie(txTries *TxTries, root common.Hash, transactions []common.Hash, db 
 		transactions = make([]common.Hash, 0)
 	}
 
-	_, err := txTries.AddTrie(root, db, transactions)
+	err := txTries.AddNewTrie(root, transactions, db)
 
 	if err != nil {
 		return err

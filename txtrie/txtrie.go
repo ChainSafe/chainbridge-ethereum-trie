@@ -92,8 +92,29 @@ func deleteTrie(trie *ethtrie.Trie) error {
 
 }
 
+// AddNewTrie adds a new transaction trie to an existing TxTries object
+func (t *TxTries) AddNewTrie(root common.Hash, transactions []common.Hash, db *leveldb.Database) error {
+
+	if db == nil {
+		return errors.New("db does not exist")
+	}
+
+	if transactions == nil {
+		return errors.New("transactions cannot be nil")
+	}
+
+	_, err := t.newTrie(root, db, transactions)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+
+}
+
 // AddTrie creates a new instance of a trie object
-func (t *TxTries) AddTrie(root common.Hash, db *leveldb.Database, transactions []common.Hash) (*ethtrie.Trie, error) {
+func (t *TxTries) newTrie(root common.Hash, db *leveldb.Database, transactions []common.Hash) (*ethtrie.Trie, error) {
 	// TODO: look into cache values
 	// this creates a new trie database with our KVDB as the diskDB for node storage
 	trie, err := ethtrie.New(emptyRoot, ethtrie.NewDatabaseWithCache(db, 0, ""))
