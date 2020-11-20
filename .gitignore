@@ -1,5 +1,3 @@
 /.idea
 /bin
 /build
-./txtrie/reference-database
-./txtrie/temp-database
