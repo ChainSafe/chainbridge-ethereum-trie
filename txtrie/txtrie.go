@@ -60,17 +60,10 @@ func (t *TxTries) updateTriesAndRoots(trie *ethtrie.Trie, root common.Hash) erro
 }
 
 func deleteTrie(trie *ethtrie.Trie) error {
-
-	// note that TryDelete removes any existing value for key from the trie.
-	// if the value node corresponding to the key does not exist in the trie
-	// it returns a MissingNodeError.
-	// Since the key of a transaction in the trie corresponds to the rlp encoding
-	// of that transactions index in the block, we will incrementally delete keys
-	// until we recieve a MissingNodeError
+	i := 0
 
 	for {
-		i := 0
-		// key of transaction 
+		// key of transaction
 		b, err := intToBytes(i)
 		if err != nil {
 			return err
@@ -82,12 +75,15 @@ func deleteTrie(trie *ethtrie.Trie) error {
 
 		err = trie.TryDelete(key)
 		if err != nil {
-			// in this case we are expecting to hit an error when we hit a key that has no value node.
+			return err
+		}
+
+		if trie.Hash() == emptyRoot {
 			break
 		}
 
 		i++
-	} 
+	}
 
 	return nil
 
@@ -164,8 +160,6 @@ func intToBytes(i int) ([]byte, error) {
 
 }
 
-
-
 // RetrieveEncodedProof retrieves an encoded Proof for a value at key in trie with root root
 func (t *TxTries) RetrieveEncodedProof(root common.Hash, key []byte) ([]byte, error) {
 	index := t.indexOfRoot(root)
@@ -188,7 +182,7 @@ func (t *TxTries) RetrieveProof(root common.Hash, key []byte) (*ProofDatabase, e
 		return nil, errors.New("transaction trie for this transaction root does not exist")
 	}
 
-	return retrieveProof(t.txTries[index],root, key)
+	return retrieveProof(t.txTries[index], root, key)
 }
 
 func retrieveProof(trie *ethtrie.Trie, root common.Hash, key []byte) (*ProofDatabase, error) {

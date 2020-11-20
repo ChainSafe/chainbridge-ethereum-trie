@@ -300,7 +300,7 @@ func TestAddMultipleTries(t *testing.T) {
 	if txTries.txTries[2].Hash() != expectedRoot3 {
 		t.Fatalf("trie does not have empty hash as root, expected: %x, got: %x", expectedRoot3, txTries.txTries[2].Hash())
 	}
-	fmt.Println("HERE")
+
 	err = addTrie(txTries, expectedRoot1, vals1, db)
 	if err != nil {
 		t.Fatal(err)
