@@ -47,6 +47,8 @@ func (db *ProofDatabase) Close() error {
 
 // Has checks if key exists in ProofDatabase db
 func (db *ProofDatabase) Has(key []byte) (bool, error) {
+	db.lock.Lock()
+	defer db.lock.Unlock()
 	if db.db == nil {
 		return false, errors.New("database does not exist")
 	}
@@ -56,6 +58,8 @@ func (db *ProofDatabase) Has(key []byte) (bool, error) {
 
 // Get retrieves value associated with key in ProofDatabase db, and checks for existance
 func (db *ProofDatabase) Get(key []byte) ([]byte, error) {
+	db.lock.Lock()
+	defer db.lock.Unlock()
 	if db.db == nil {
 		return nil, errors.New("database does not exist")
 	}
@@ -68,7 +72,8 @@ func (db *ProofDatabase) Get(key []byte) ([]byte, error) {
 
 // Put insets and associates value with key in ProofDatabase db
 func (db *ProofDatabase) Put(key []byte, value []byte) error {
-
+	db.lock.Lock()
+	defer db.lock.Unlock()
 	if db.db == nil {
 		return errors.New("database does not exist")
 	}

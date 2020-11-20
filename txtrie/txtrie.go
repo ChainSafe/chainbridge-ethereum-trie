@@ -79,6 +79,7 @@ func deleteTrie(trie *ethtrie.Trie) error {
 		}
 
 		if trie.Hash() == emptyRoot {
+			// eventually we will reach a point where the hash of the root node of the trie is the emptyRoot
 			break
 		}
 
