@@ -1,4 +1,4 @@
-module github.com/ChainSafe/Chainbridge-Trie
+module github.com/ChainSafe/chainbridge-ethereum-trie
 
 go 1.13
 

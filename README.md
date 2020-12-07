@@ -3,9 +3,9 @@
 ## TODO
 - [ ] Add license
 
-## EXAMPLE
+## Example Usage
 
-Here is an example of how this library could be used, as requested.
+Here is an example of how this library could be used.
 
 ```
 // assume trieDB is some already instanciated leveldb instance
