@@ -4,8 +4,6 @@
 package txtrie
 
 import (
-	"bytes"
-	"encoding/binary"
 	"errors"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -158,18 +156,6 @@ func updateTrie(trie *ethtrie.Trie, transactions types.Transactions, transaction
 	}
 
 	return nil
-}
-
-func intToBytes(i int) ([]byte, error) {
-	buf := new(bytes.Buffer)
-	int := uint32(i)
-	err := binary.Write(buf, binary.LittleEndian, int)
-	if err != nil {
-		return nil, err
-	}
-
-	return buf.Bytes(), nil
-
 }
 
 // RetrieveEncodedProof retrieves an encoded Proof for a value at key in trie with root root
