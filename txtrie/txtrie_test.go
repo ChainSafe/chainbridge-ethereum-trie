@@ -5,6 +5,7 @@ package txtrie
 
 import (
 	"fmt"
+	"math/big"
 	"os"
 	"testing"
 
@@ -595,5 +596,42 @@ func TestRetrieveProofDeletedTrie_Fails(t *testing.T) {
 
 	if deleteReferenceDB() != nil {
 		t.Fatalf("unable to clear reference database")
+	}
+}
+
+func TestExampleTrieAndProof(t *testing.T) {
+	// Pulled from Goerli block 3966245
+	rootHash := common.HexToHash("6758ae424072e98ad01e2494de2b0957c7ac9bc531983ef8c6ba3783b27c94cb")
+	transactions := []common.Hash{
+		common.HexToHash("c0bce657f95f4a9f29c6096a708237ac1b1c195e373a2ddda0fbae8618489584"),
+		common.HexToHash("3ccf489bc9cdaa42fbc9065ae31a923ea0cd3f382f16efc6a8a32e57b8733902"),
+		common.HexToHash("25a6703a4e375edb8d6467864703622aee1fa745577a8a05757f5810cf563981"),
+		common.HexToHash("d6f9df43303fd3d13d205c3b79e21c761826c75f98c3a5329b7d55bac1073728"),
+	}
+
+	txTries := createNewTxTries(1)
+	db := createTempDB()
+	defer deleteTempDB()
+
+	err := txTries.AddNewTrie(rootHash, transactions, db)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// We'll use transaction at index 1
+	idx, err := rlp.EncodeToBytes(big.NewInt(1))
+	if err != nil {
+		panic(err)
+	}
+
+	// TODO: Validate proofs
+	_, err = txTries.RetrieveProof(rootHash, idx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = txTries.RetrieveEncodedProof(rootHash, idx)
+	if err != nil {
+		t.Fatal(err)
 	}
 }
