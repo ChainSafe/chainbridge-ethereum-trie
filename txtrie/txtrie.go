@@ -67,11 +67,7 @@ func deleteTrie(trie *ethtrie.Trie) error {
 
 	for {
 		// key of transaction
-		b, err := intToBytes(i)
-		if err != nil {
-			return err
-		}
-		key, err := rlp.EncodeToBytes(b)
+		key, err := rlp.EncodeToBytes(uint(i))
 		if err != nil {
 			return err
 		}
