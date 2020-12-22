@@ -2,6 +2,7 @@ package txtrie
 
 import (
 	"encoding/json"
+	"log"
 
 	"github.com/ethereum/go-ethereum/core/types"
 )
@@ -20,7 +21,11 @@ func GetTransactions3() types.Transactions {
 
 func getTransactions(data string) types.Transactions {
 	transactions := types.Transactions{}
-	json.Unmarshal([]byte(data), &transactions)
+	err := json.Unmarshal([]byte(data), &transactions)
+
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	return transactions
 }
