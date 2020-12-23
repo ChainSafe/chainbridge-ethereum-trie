@@ -101,7 +101,10 @@ func computeEthReferenceTrieHash(transactions types.Transactions) (common.Hash, 
 			return emptyHash, err
 		}
 
-		newTrie.Update(key, value)
+		err = newTrie.TryUpdate(key, value)
+		if err != nil {
+			return emptyHash, err
+		}
 	}
 
 	return newTrie.Hash(), nil
