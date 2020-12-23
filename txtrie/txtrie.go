@@ -4,11 +4,10 @@
 package txtrie
 
 import (
-	"bytes"
-	"encoding/binary"
 	"errors"
 
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethdb/leveldb"
 	"github.com/ethereum/go-ethereum/rlp"
 	ethtrie "github.com/ethereum/go-ethereum/trie"
@@ -66,11 +65,7 @@ func deleteTrie(trie *ethtrie.Trie) error {
 
 	for {
 		// key of transaction
-		b, err := intToBytes(i)
-		if err != nil {
-			return err
-		}
-		key, err := rlp.EncodeToBytes(b)
+		key, err := rlp.EncodeToBytes(uint(i))
 		if err != nil {
 			return err
 		}
@@ -93,7 +88,7 @@ func deleteTrie(trie *ethtrie.Trie) error {
 }
 
 // AddNewTrie adds a new transaction trie to an existing TxTries object
-func (t *TxTries) AddNewTrie(root common.Hash, transactions []common.Hash, db *leveldb.Database) error {
+func (t *TxTries) AddNewTrie(root common.Hash, transactions types.Transactions, db *leveldb.Database) error {
 
 	if db == nil {
 		return errors.New("db does not exist")
@@ -114,7 +109,7 @@ func (t *TxTries) AddNewTrie(root common.Hash, transactions []common.Hash, db *l
 }
 
 // AddTrie creates a new instance of a trie object
-func (t *TxTries) newTrie(root common.Hash, db *leveldb.Database, transactions []common.Hash) (*ethtrie.Trie, error) {
+func (t *TxTries) newTrie(root common.Hash, db *leveldb.Database, transactions types.Transactions) (*ethtrie.Trie, error) {
 	// TODO: look into cache values
 	// this creates a new trie database with our KVDB as the diskDB for node storage
 	trie, err := ethtrie.New(emptyRoot, ethtrie.NewDatabaseWithCache(db, 0, ""))
@@ -139,39 +134,28 @@ func (t *TxTries) newTrie(root common.Hash, db *leveldb.Database, transactions [
 
 // updateTrie updates the transaction trie with root transactionRoot with given transactions
 // note that this assumes the slice transactions is in the same order they are in the block
-func updateTrie(trie *ethtrie.Trie, transactions []common.Hash, transactionRoot common.Hash) error {
+func updateTrie(trie *ethtrie.Trie, transactions types.Transactions, transactionRoot common.Hash) error {
 	for i, tx := range transactions {
-		b, err := intToBytes(i)
+
+		key, err := rlp.EncodeToBytes(uint(i))
 		if err != nil {
 			return err
 		}
 
-		key, err := rlp.EncodeToBytes(b)
+		value, err := rlp.EncodeToBytes(tx)
 		if err != nil {
 			return err
 		}
 
-		trie.Update(key, tx.Bytes())
+		trie.Update(key, value)
 	}
 
 	// check if the root hash of the trie matches the transactionRoot
-	if trie.Hash() != transactionRoot {
+	if trie.Hash().Hex() != transactionRoot.Hex() {
 		return errors.New("transaction roots don't match")
 	}
 
 	return nil
-}
-
-func intToBytes(i int) ([]byte, error) {
-	buf := new(bytes.Buffer)
-	int := uint32(i)
-	err := binary.Write(buf, binary.LittleEndian, int)
-	if err != nil {
-		return nil, err
-	}
-
-	return buf.Bytes(), nil
-
 }
 
 // RetrieveEncodedProof retrieves an encoded Proof for a value at key in trie with root root
