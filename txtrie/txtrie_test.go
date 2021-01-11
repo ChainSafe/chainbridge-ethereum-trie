@@ -604,9 +604,13 @@ func TestRetrieveEncodedProof(t *testing.T) {
 
 	keyRlp, err := rlp.EncodeToBytes(0)
 
+	if err != nil {
+		t.Error("failed to encode key")
+	}
+
 	_, err = txTries.RetrieveEncodedProof(expectedRoot1, keyRlp)
 
 	if err != nil {
-		t.Fatalf("unable to rerieve proof")
+		t.Error("unable to rerieve proof")
 	}
 }
