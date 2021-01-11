@@ -112,7 +112,7 @@ func (t *TxTries) AddNewTrie(root common.Hash, transactions types.Transactions, 
 func (t *TxTries) newTrie(root common.Hash, db *leveldb.Database, transactions types.Transactions) (*ethtrie.Trie, error) {
 	// TODO: look into cache values
 	// this creates a new trie database with our KVDB as the diskDB for node storage
-	trie, err := ethtrie.New(emptyRoot, ethtrie.NewDatabaseWithCache(db, 0, ""))
+	trie, err := ethtrie.New(emptyRoot, ethtrie.NewDatabaseWithCache(db, 0))
 	if err != nil {
 		return nil, err
 	}
@@ -190,7 +190,7 @@ func retrieveProof(trie *ethtrie.Trie, root common.Hash, key []byte) (*ProofData
 
 // VerifyProof verifies merkle proof on path key against the provided root
 func VerifyProof(root common.Hash, key []byte, proof *ProofDatabase) (bool, error) {
-	exists, err := ethtrie.VerifyProof(root, key, proof)
+	exists, _, err := ethtrie.VerifyProof(root, key, proof)
 
 	if err != nil {
 		return false, err

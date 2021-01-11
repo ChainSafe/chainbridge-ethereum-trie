@@ -84,7 +84,7 @@ func addTrie(txTries *TxTries, root common.Hash, transactions types.Transactions
 
 func computeEthReferenceTrieHash(transactions types.Transactions) (common.Hash, error) {
 	db := createReferenceDB()
-	newTrie, err := trie.New(emptyRoot, trie.NewDatabaseWithCache(db, 0, ""))
+	newTrie, err := trie.New(emptyRoot, trie.NewDatabaseWithCache(db, 0))
 	if err != nil {
 		return emptyHash, err
 	}
