@@ -602,7 +602,9 @@ func TestRetrieveEncodedProof(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	keyRlp, err := rlp.EncodeToBytes(0)
+	key := uint(0)
+
+	keyRlp, err := rlp.EncodeToBytes(key)
 
 	if err != nil {
 		t.Error("failed to encode key")
