@@ -587,3 +587,26 @@ func TestRetrieveProofDeletedTrie_Fails(t *testing.T) {
 		t.Fatalf("unable to clear reference database")
 	}
 }
+
+func TestRetrieveEncodedProof(t *testing.T) {
+	txTries := createNewTxTries(1)
+	db := createTempDB()
+
+	vals1 := GetTransactions1()
+	expectedRoot1, err := computeEthReferenceTrieHash(vals1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = addTrie(txTries, expectedRoot1, vals1, db)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	keyRlp, err := rlp.EncodeToBytes(0)
+
+	_, err = txTries.RetrieveEncodedProof(expectedRoot1, keyRlp)
+
+	if err != nil {
+		t.Fatalf("unable to rerieve proof")
+	}
+}
