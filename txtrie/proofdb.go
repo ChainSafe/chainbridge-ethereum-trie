@@ -4,6 +4,7 @@
 package txtrie
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"sync"
@@ -14,17 +15,6 @@ import (
 type ProofDatabase struct {
 	db   map[string][]byte
 	lock sync.RWMutex
-}
-
-type proofBuffer []byte
-
-func (b *proofBuffer) Write(p []byte) (n int, err error) {
-	*b = append(*b, p...)
-	return len(p), nil
-}
-
-func (b *proofBuffer) Reset() {
-	*b = (*b)[:0]
 }
 
 // NewProofDatabase returns a wrapped map
@@ -96,8 +86,7 @@ func (db *ProofDatabase) Delete(key []byte) error {
 // Encodes a proof Database to a format parsable by the on chain contract
 func encodeProofDB(rootHash common.Hash, key []byte, proofDb *ProofDatabase) ([]byte, error) {
 	var proofNodes proof
-	var encodedProof []byte
-	var proof *proofBuffer
+	var encodedProof = bytes.NewBuffer([]byte{})
 	key = keybytesToHex(key)
 	wantHash := rootHash
 
@@ -114,7 +103,7 @@ func encodeProofDB(rootHash common.Hash, key []byte, proofDb *ProofDatabase) ([]
 			return nil, fmt.Errorf("bad proof node %d: %v", i, err)
 		}
 
-		proofNodes[i] = n
+		proofNodes = append(proofNodes, n)
 
 		// we want to retrieve the next node on the key path
 		keyrest, cld := get(n, key, true)
@@ -128,11 +117,11 @@ func encodeProofDB(rootHash common.Hash, key []byte, proofDb *ProofDatabase) ([]
 			copy(wantHash[:], cld)
 		case valueNode:
 			// We have reached the desired value node
-			err := proofNodes.EncodeRLP(proof)
+			err := proofNodes.EncodeRLP(encodedProof)
 			if err != nil {
 				return nil, err
 			}
-			return encodedProof, nil
+			return encodedProof.Bytes(), nil
 		}
 	}
 }
