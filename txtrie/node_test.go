@@ -11,7 +11,7 @@ import (
 )
 
 func newTestFullNode(v []byte) []interface{} {
-	fullNodeData := []interface{}{}
+	var fullNodeData []interface{}
 	for i := 0; i < 16; i++ {
 		k := bytes.Repeat([]byte{byte(i + 1)}, 32)
 		fullNodeData = append(fullNodeData, k)
@@ -23,7 +23,7 @@ func newTestFullNode(v []byte) []interface{} {
 func TestDecodeNestedNode(t *testing.T) {
 	fullNodeData := newTestFullNode([]byte("fullnode"))
 
-	data := [][]byte{}
+	var data [][]byte
 	for i := 0; i < 16; i++ {
 		data = append(data, nil)
 	}
@@ -57,7 +57,7 @@ func TestDecodeFullNodeWrongSizeChild(t *testing.T) {
 func TestDecodeFullNodeWrongNestedFullNode(t *testing.T) {
 	fullNodeData := newTestFullNode([]byte("fullnode"))
 
-	data := [][]byte{}
+	var data [][]byte
 	for i := 0; i < 16; i++ {
 		data = append(data, []byte("123456"))
 	}

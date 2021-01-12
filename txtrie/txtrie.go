@@ -175,10 +175,10 @@ func (t *TxTries) RetrieveProof(root common.Hash, key []byte) (*ProofDatabase, e
 		return nil, errors.New("transaction trie for this transaction root does not exist")
 	}
 
-	return retrieveProof(trieToRetrieve, root, key)
+	return retrieveProof(trieToRetrieve, key)
 }
 
-func retrieveProof(trie *ethtrie.Trie, root common.Hash, key []byte) (*ProofDatabase, error) {
+func retrieveProof(trie *ethtrie.Trie, key []byte) (*ProofDatabase, error) {
 	var proof = NewProofDatabase()
 	err := trie.Prove(key, 0, proof)
 	if err != nil {
