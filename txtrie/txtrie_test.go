@@ -590,14 +590,13 @@ func TestRetrieveProofDeletedTrie_Fails(t *testing.T) {
 
 func TestRetrieveEncodedProof(t *testing.T) {
 	txTries := createNewTxTries(1)
-	db := createTempDB()
 
 	vals1 := GetTransactions1()
 	expectedRoot1, err := computeEthReferenceTrieHash(vals1)
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = addTrie(txTries, expectedRoot1, vals1, db)
+	err = txTries.AddNewTrie(expectedRoot1, vals1, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -613,6 +612,6 @@ func TestRetrieveEncodedProof(t *testing.T) {
 	_, err = txTries.RetrieveEncodedProof(expectedRoot1, keyRlp)
 
 	if err != nil {
-		t.Error("unable to rerieve proof")
+		t.Error("unable to retrieve proof")
 	}
 }

@@ -63,7 +63,7 @@ func (p proof) EncodeRLP(w io.Writer) error {
 }
 
 func (p proof) toGenericArray() []interface{} {
-	var proofNodes []interface{}
+	var proofNodes = make([]interface{}, len(p))
 
 	for i, n := range p {
 		// if the node is a full node we want to expand it to make sure it's rlp encoded properly

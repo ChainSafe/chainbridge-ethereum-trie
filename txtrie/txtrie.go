@@ -90,9 +90,9 @@ func deleteTrie(trie *ethtrie.Trie) error {
 // AddNewTrie adds a new transaction trie to an existing TxTries object
 func (t *TxTries) AddNewTrie(root common.Hash, transactions types.Transactions, db *leveldb.Database) error {
 
-	if db == nil {
-		return errors.New("db does not exist")
-	}
+	//if db == nil {
+	//	return errors.New("db does not exist")
+	//}
 
 	if transactions == nil {
 		return errors.New("transactions cannot be nil")
