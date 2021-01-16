@@ -5,6 +5,8 @@ package txtrie
 
 import (
 	"errors"
+	"fmt"
+	"github.com/ethereum/go-ethereum/ethdb"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -119,11 +121,37 @@ func retrieveProof(trie *ethtrie.Trie, key []byte) (*ProofDatabase, error) {
 
 // VerifyProof verifies merkle proof on path key against the provided root
 func VerifyProof(root common.Hash, key []byte, proof *ProofDatabase) (bool, error) {
-	exists, err := ethtrie.VerifyProof(root, key, proof)
+	exists, err := verifyProof(root, key, proof)
 
 	if err != nil {
 		return false, err
 	}
 
 	return exists != nil, nil
+}
+
+func verifyProof(rootHash common.Hash, key []byte, proofDb ethdb.KeyValueReader) (value []byte, err error) {
+	key = keybytesToHex(key)
+	wantHash := rootHash
+	for i := 0; ; i++ {
+		buf, _ := proofDb.Get(wantHash[:])
+		if buf == nil {
+			return nil, fmt.Errorf("proof node %d (hash %064x) missing", i, wantHash)
+		}
+		n, err := decodeNode(wantHash[:], buf)
+		if err != nil {
+			return nil, fmt.Errorf("bad proof node %d: %v", i, err)
+		}
+		keyrest, cld := get(n, key, true)
+		switch cld := cld.(type) {
+		case nil:
+			// The trie doesn't contain the key.
+			return nil, nil
+		case hashNode:
+			key = keyrest
+			copy(wantHash[:], cld)
+		case valueNode:
+			return cld, nil
+		}
+	}
 }
