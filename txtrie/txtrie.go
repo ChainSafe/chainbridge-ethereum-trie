@@ -5,10 +5,11 @@ package txtrie
 
 import (
 	"errors"
+	"fmt"
+	"github.com/ethereum/go-ethereum/ethdb"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/ethdb/leveldb"
 	"github.com/ethereum/go-ethereum/rlp"
 	ethtrie "github.com/ethereum/go-ethereum/trie"
 )
@@ -17,9 +18,7 @@ import (
 type TxTries struct {
 	// TODO: the memory allocated for these is hard to get back, look for better way to have a queue
 	txTries map[common.Hash]*ethtrie.Trie
-	// txTries      []*ethtrie.Trie
-	txRoots      []common.Hash // needed to track insertion order
-	triesToStore int
+	txRoots []common.Hash // needed to track insertion order
 }
 
 var (
@@ -28,108 +27,40 @@ var (
 )
 
 // NewTxTries creates a new instance of a TxTries object
-func NewTxTries(t int) *TxTries {
+func NewTxTries() *TxTries {
 	txTrie := &TxTries{
-		txTries:      make(map[common.Hash]*ethtrie.Trie),
-		triesToStore: t,
+		txTries: make(map[common.Hash]*ethtrie.Trie),
 	}
 	return txTrie
 
 }
 
-func (t *TxTries) updateTriesAndRoots(trie *ethtrie.Trie, root common.Hash) error {
-	if len(t.txTries) >= t.triesToStore {
-		// delete contents of trie from database
-		trieToDelete := t.txTries[t.txRoots[0]]
-		err := deleteTrie(trieToDelete)
-		if err != nil {
-			return err
-		}
-		delete(t.txTries, t.txRoots[0])
-		t.txRoots = append(t.txRoots, root)
-		t.txTries[root] = trie
-		t.txRoots = t.txRoots[1:]
-
-	} else {
-		t.txRoots = append(t.txRoots, root)
-		t.txTries[root] = trie
-
-	}
-
-	return nil
-
-}
-
-func deleteTrie(trie *ethtrie.Trie) error {
-	i := 0
-
-	for {
-		// key of transaction
-		key, err := rlp.EncodeToBytes(uint(i))
-		if err != nil {
-			return err
-		}
-
-		err = trie.TryDelete(key)
-		if err != nil {
-			return err
-		}
-
-		if trie.Hash() == emptyRoot {
-			// eventually we will reach a point where the hash of the root node of the trie is the emptyRoot
-			break
-		}
-
-		i++
-	}
-
-	return nil
-
-}
-
 // AddNewTrie adds a new transaction trie to an existing TxTries object
-func (t *TxTries) AddNewTrie(root common.Hash, transactions types.Transactions, db *leveldb.Database) error {
-
-	if db == nil {
-		return errors.New("db does not exist")
-	}
+func (t *TxTries) CreateNewTrie(root common.Hash, transactions types.Transactions) error {
 
 	if transactions == nil {
 		return errors.New("transactions cannot be nil")
 	}
 
-	_, err := t.newTrie(root, db, transactions)
+	trie, err := ethtrie.New(emptyRoot, ethtrie.NewDatabase(nil))
+	if err != nil {
+		return nil
+	}
+
+	err = updateTrie(trie, transactions, root)
+
+	if err != nil {
+		return err
+	}
+
+	t.txRoots = append(t.txRoots, root)
+	t.txTries[root] = trie
 
 	if err != nil {
 		return err
 	}
 
 	return nil
-
-}
-
-// AddTrie creates a new instance of a trie object
-func (t *TxTries) newTrie(root common.Hash, db *leveldb.Database, transactions types.Transactions) (*ethtrie.Trie, error) {
-	// TODO: look into cache values
-	// this creates a new trie database with our KVDB as the diskDB for node storage
-	trie, err := ethtrie.New(emptyRoot, ethtrie.NewDatabaseWithCache(db, 0))
-	if err != nil {
-		return nil, err
-	}
-
-	err = updateTrie(trie, transactions, root)
-
-	if err != nil {
-		return nil, err
-	}
-
-	err = t.updateTriesAndRoots(trie, root)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return trie, nil
 }
 
 // updateTrie updates the transaction trie with root transactionRoot with given transactions
@@ -190,11 +121,37 @@ func retrieveProof(trie *ethtrie.Trie, key []byte) (*ProofDatabase, error) {
 
 // VerifyProof verifies merkle proof on path key against the provided root
 func VerifyProof(root common.Hash, key []byte, proof *ProofDatabase) (bool, error) {
-	exists, _, err := ethtrie.VerifyProof(root, key, proof)
+	exists, err := verifyProof(root, key, proof)
 
 	if err != nil {
 		return false, err
 	}
 
 	return exists != nil, nil
+}
+
+func verifyProof(rootHash common.Hash, key []byte, proofDb ethdb.KeyValueReader) (value []byte, err error) {
+	key = keybytesToHex(key)
+	wantHash := rootHash
+	for i := 0; ; i++ {
+		buf, _ := proofDb.Get(wantHash[:])
+		if buf == nil {
+			return nil, fmt.Errorf("proof node %d (hash %064x) missing", i, wantHash)
+		}
+		n, err := decodeNode(wantHash[:], buf)
+		if err != nil {
+			return nil, fmt.Errorf("bad proof node %d: %v", i, err)
+		}
+		keyrest, cld := get(n, key, true)
+		switch cld := cld.(type) {
+		case nil:
+			// The trie doesn't contain the key.
+			return nil, nil
+		case hashNode:
+			key = keyrest
+			copy(wantHash[:], cld)
+		case valueNode:
+			return cld, nil
+		}
+	}
 }
